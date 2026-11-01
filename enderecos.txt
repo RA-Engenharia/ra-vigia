@@ -1,0 +1,8 @@
+# Endereços públicos vigiados (um por linha: nome|url). Só endereço público: este repositório é aberto.
+OrçaPRO servidor (API)|https://orcapro.raengenhariaespecial.com.br/api/versao
+OrçaPRO site|https://orcaprogestao.com.br/
+OrçaPRO app web|https://app.orcaprogestao.com.br/
+Visualizador RA (rvapp)|https://orcapro.raengenhariaespecial.com.br/rvapp/
+CertamePRO site|https://certamepro.com.br/
+CertamePRO app|https://app.certamepro.com.br/
+n8n|https://n8n.raengenhariaespecial.com.br/

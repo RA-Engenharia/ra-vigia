@@ -1,0 +1,50 @@
+# Vigia de queda dos sistemas da RA Engenharia (01/11/2026).
+# Roda no GitHub, fora do VPS e do PC: se qualquer um dos dois cair, o aviso chega mesmo assim.
+# Fora do ar = abre uma issue "FORA DO AR" (o GitHub manda e-mail); voltou = comenta e fecha.
+name: vigia
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  issues: write
+  contents: read
+concurrency: vigia
+jobs:
+  conferir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir endereços
+        id: c
+        run: |
+          falhas=""
+          while IFS='|' read -r nome url; do
+            case "$nome" in ''|\#*) continue;; esac
+            ok=0
+            for t in 1 2 3; do
+              code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$url" || echo 000)
+              if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then ok=1; break; fi
+              sleep 20
+            done
+            [ $ok = 1 ] || falhas="$falhas- **$nome** ($url): HTTP $code"$'\n'
+          done < enderecos.txt
+          { echo "falhas<<FIM"; printf '%s' "$falhas"; echo "FIM"; } >> "$GITHUB_OUTPUT"
+      - name: Avisar ou fechar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FALHAS: ${{ steps.c.outputs.falhas }}
+        run: |
+          aberta=$(gh issue list --label fora-do-ar --state open --json number --jq '.[0].number')
+          agora=$(TZ=America/Sao_Paulo date '+%d/%m/%Y %H:%M')
+          if [ -n "$FALHAS" ]; then
+            if [ -z "$aberta" ]; then
+              gh label create fora-do-ar --color B60205 2>/dev/null || true
+              gh issue create --title "FORA DO AR ($agora)" --label fora-do-ar --body "$(printf 'Conferido 3 vezes em 1 minuto, às %s (Brasília):\n\n%s\nO que fazer: ver o painel da Hostinger (VPS 187.127.40.14) e `systemctl status` do serviço.' "$agora" "$FALHAS")"
+            fi
+            exit 1
+          elif [ -n "$aberta" ]; then
+            gh issue comment "$aberta" --body "Voltou: tudo respondendo às $agora (Brasília)."
+            gh issue close "$aberta"
+          fi
