@@ -6,3 +6,4 @@ Visualizador RA (rvapp)|https://orcapro.raengenhariaespecial.com.br/rvapp/
 CertamePRO site|https://certamepro.com.br/
 CertamePRO app|https://app.certamepro.com.br/
 n8n|https://n8n.raengenhariaespecial.com.br/
+Vigia externo (Cloudflare)|https://ra-vigia.ra-engenharia.workers.dev/saude
